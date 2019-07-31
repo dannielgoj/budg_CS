@@ -1,0 +1,43 @@
+---
+title: "userDriverBuildEDA"
+author: "dw"
+date: "7/31/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(lubridate)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+rcf_data = read_csv('UserDriverBuild_ride_car_food.csv', col)
+rcf_data$month_date =  as.Date(rcf_data$month_date, format = "%m/%d/%Y")
+head(rcf_data)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r}
+ggplot(data = rcf_data, aes(x = month_date)) + 
+  geom_line( aes(y = MTU_platform))  + geom_point(aes(y = MTU_platform)) + 
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
+  ggtitle("MTU Platform",)  + 
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+ggplot(data = rcf_data, aes(x = month_date)) + 
+  geom_line( aes(y = ride_target_in_base_case))  + geom_point(aes(y = ride_target_in_base_case)) + 
+  geom_line( aes(y = car_target_in_base_case))  + geom_point(aes(y = car_target_in_base_case)) + 
+  geom_line( aes(y = food_target_in_base_case))  + geom_point(aes(y = food_target_in_base_case)) + 
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
+  ggtitle("Target Base Case Ride vs Car vs Food",)  + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
