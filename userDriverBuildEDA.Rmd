@@ -9,12 +9,15 @@ output: html_document
 library(tidyverse)
 library(ggplot2)
 library(lubridate)
+library(reshape2)
+library(cowplot)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
 ```{r}
-rcf_data = read_csv('UserDriverBuild_ride_car_food.csv', col)
+rcf_data = read_csv('UserDriverBuild_ride_car_food.csv')
+
 rcf_data$month_date =  as.Date(rcf_data$month_date, format = "%m/%d/%Y")
 head(rcf_data)
 ```
@@ -25,19 +28,226 @@ You can also embed plots, for example:
 
 ```{r}
 ggplot(data = rcf_data, aes(x = month_date)) + 
-  geom_line( aes(y = MTU_platform))  + geom_point(aes(y = MTU_platform)) + 
+  geom_line( aes(y = MTU_platform))  + 
+  geom_point(aes(y = MTU_platform)) + 
   geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
   ggtitle("MTU Platform",)  + 
+  ylab('number_of_users') +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
 ```{r}
-ggplot(data = rcf_data, aes(x = month_date)) + 
-  geom_line( aes(y = ride_target_in_base_case))  + geom_point(aes(y = ride_target_in_base_case)) + 
-  geom_line( aes(y = car_target_in_base_case))  + geom_point(aes(y = car_target_in_base_case)) + 
-  geom_line( aes(y = food_target_in_base_case))  + geom_point(aes(y = food_target_in_base_case)) + 
+
+d0 = rcf_data[c("month_date","ride_target_in_base_case","car_target_in_base_case", "food_target_in_base_case")] %>% melt( id = 'month_date' )
+ggplot(data = d0, aes(x = month_date, y = value, group = variable)) + 
+  geom_point(aes(color = variable))+
+  geom_line(aes(color = variable))+
   geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
-  ggtitle("Target Base Case Ride vs Car vs Food",)  + 
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "bottom")+
+  ylab('number_of_orders')+
+  ggtitle("Target Base Case Ride vs Car vs Food")   
+
+
+
+
+  
+  
+  geom_line( aes(y = ride_target_in_base_case,  color= "red") )  + geom_point(aes(y = ride_target_in_base_case, color = 'red')) 
+
++
+  geom_line( aes(y = car_target_in_base_case,  color= "blue"))  + geom_point(aes(y = car_target_in_base_case)) +
+  geom_line( aes(y = food_target_in_base_case, color= "black"))  + geom_point(aes(y = food_target_in_base_case)) + 
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
+  ggtitle("Target Base Case Ride vs Car vs Food")  + 
+  ylab('number_of_orders')+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "bottom")+
+  scale_color_discrete(name = "", labels = c("ride_target_in_base_case", "car_target_in_base_case", "food_target_in_base_case"))
+
+rcf_data$food_target_in_base_case
 
 ```
+
+
+```{r}
+d1 = rcf_data[c("month_date","ride_MTU_new","ride_MTU_repeat", "ride_MTU_reactivate")] %>% melt( id = 'month_date' )
+ggplot(d1, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_users')+
+  ggtitle("RIDE MTU User Breakdown")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+
+```{r}
+d2 = rcf_data[c("month_date","car_MTU_new","car_MTU_repeat", "car_MTU_reactivate")] %>% melt( id = 'month_date' )
+ggplot(d2, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_users')+
+  ggtitle("CAR MTU User Breakdown")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+```{r}
+d3 = rcf_data[c("month_date","food_MTU_new","food_MTU_repeat", "food_MTU_reactivate")] %>% melt( id = 'month_date' )
+ggplot(d3, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_users')+
+  ggtitle("FOOD MTU User Breakdown")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+
+```{r}
+d3 = rcf_data[c("month_date","food_MTU_new","food_MTU_repeat", "food_MTU_reactivate")] %>% melt( id = 'month_date' )
+ggplot(d3, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_users')+
+  ggtitle("FOOD MTU User Breakdown")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+
+
+
+```{r}
+d4 = rcf_data[c("month_date","ride_transactions_organic_new","ride_transactions_organic_reactivate", "ride_transactions_organic_repeat")] %>% melt( id = 'month_date' )
+
+ggplot(d4, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_orders')+
+  ggtitle("RIDE Organic Transactions orders")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+
+```{r}
+d5 = rcf_data[c("month_date","car_transactions_organic_new","car_transactions_organic_reactivate", "car_transactions_organic_repeat")] %>% melt( id = 'month_date' )
+
+ggplot(d5, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_orders')+
+  ggtitle("CAR Organic Transactions orders")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+
+```{r}
+d6 = rcf_data[c("month_date","food_transactions_organic_new","food_transactions_organic_reactivate", "food_transactions_organic_repeat")] %>% melt( id = 'month_date' )
+
+ggplot(d6, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar( stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('number_of_orders')+
+  ggtitle("FOOD Organic Transactions orders")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "right")
+```
+
+
+
+
+
+
+
+
+```{r}
+d7 = rcf_data[c("month_date","ride_transactions_inorganic","ride_transactions_organic")] %>% melt( id = 'month_date' )
+
+ggplot(d7, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar(position = "fill",  stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('order proportion')+
+  ggtitle("RIDE Composition of Organic & Inorganic orders")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "bottom")
+
+```
+
+```{r}
+d8 = rcf_data[c("month_date","car_transactions_inorganic","car_transactions_organic")] %>% melt( id = 'month_date' )
+
+ggplot(d8, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar(position = "fill",  stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('order proportion')+
+  ggtitle("CAR Composition of Organic & Inorganic orders")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "bottom")
+
+```
+
+```{r}
+d9 = rcf_data[c("month_date","food_transactions_inorganic","food_transactions_organic")] %>% melt( id = 'month_date' )
+
+ggplot(d9, aes(fill=variable, y=value, x=month_date)) + 
+  geom_bar(position = "fill",  stat="identity")+
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") +
+  ylab('order proportion')+
+  ggtitle("FOOD Composition of Organic & Inorganic orders")+
+  theme(plot.title = element_text(hjust = 0.5), legend.position= "bottom")
+```
+
+```{r}
+head(rcf_data)
+```
+
+
+```{r}
+
+d10 =  rcf_data[c('month_date','ride_freq_inorganic','ride_freq_organic','car_freq_inorganic','car_freq_organic',
+                  'food_freq_inorganic','food_freq_organic')] %>% melt(id = 'month_date')
+
+p_ride = ggplot(d10 %>% filter(variable == c('ride_freq_inorganic','ride_freq_organic')), 
+                 aes(x=month_date,  y=value, color = variable)) + 
+  geom_line() +
+  geom_point() +
+  scale_color_manual(breaks = c('ride_freq_inorganic','ride_freq_organic','car_freq_inorganic',
+                               'car_freq_organic','food_freq_inorganic','food_freq_organic'), 
+                     values= c("red", "darkred", "yellow", 'orange', "blue", 'darkblue')) + 
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
+  ggtitle("Frequency Organic vs Inorganic per Serivce")  + 
+  ylab('number_of_freq') +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+p_car = ggplot(d10 %>% filter(variable == c('car_freq_inorganic','car_freq_organic')), 
+                 aes(x=month_date,  y=value, color = variable)) + 
+  geom_line() +
+  geom_point() +
+  scale_color_manual(breaks = c('ride_freq_inorganic','ride_freq_organic','car_freq_inorganic',
+                               'car_freq_organic','food_freq_inorganic','food_freq_organic'), 
+                     values= c("red", "darkred", "yellow", 'orange', "blue", 'darkblue')) + 
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
+  ggtitle("Frequency Organic vs Inorganic per Serivce")  + 
+  ylab('number_of_freq') +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+  
+p_food = ggplot(d10 %>% filter(variable == c('food_freq_inorganic','food_freq_organic')), 
+                 aes(x=month_date,  y=value, color = variable)) + 
+  geom_line() +
+  geom_point() +
+  scale_color_manual(breaks = c('ride_freq_inorganic','ride_freq_organic','car_freq_inorganic',
+                               'car_freq_organic','food_freq_inorganic','food_freq_organic'), 
+                     values= c("red", "darkred", "yellow", 'orange', "blue", 'darkblue')) + 
+  geom_vline(xintercept = as.Date('2019-01-01'), linetype="dashed", color = "red") + 
+  ggtitle("Frequency Organic vs Inorganic per Serivce")  + 
+  ylab('number_of_freq') +
+  theme(plot.title = element_text(hjust = 0.5)) 
+
+  
+p_food
+  
+plot_grid(p_ride,p_car, labels = 'Auto') 
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
